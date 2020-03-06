@@ -240,7 +240,7 @@ rm -f /tmp/eva-dist.tgz
 VERSION=$(curl -Ls $REPO/update_info.json|jq -r .version)
 BUILD=$(curl -Ls $REPO/update_info.json|jq -r .build)
 
-if ! curl -L "${REPO}/${VERSION}/stable/eva-${VERSION}-${BUILD}.tgz" \
+if ! curl -L "${REPO}/${VERSION}/nightly/eva-${VERSION}-${BUILD}.tgz" \
     -o /tmp/eva-dist.tgz; then
   echo "Unable to download EVA ICS distribution"
   exit 7

@@ -97,6 +97,7 @@ while [ "$1" ]; do
           echo "Invalid option"
           echo "--force-os debian|ubuntu|fedora|raspbian"
           exit 12
+          ;;
       esac
       ;;
     --raspbian-local-cryptography)
@@ -144,6 +145,11 @@ while [ "$1" ]; do
       echo "                     - configure bash completion (if /etc/bash_completion.d exists)"
       echo "                     - make symlinks to eva and eva-shell in /usr/local/bin"
       exit 0
+      ;;
+    *)
+      echo "Invalid option $key"
+      echo "-h or --help for help"
+      exit 12
       ;;
   esac
 done

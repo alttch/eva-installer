@@ -204,12 +204,13 @@ fi
 case $ID_LIKE in
   debian)
     apt-get install -y --no-install-recommends bash jq curl procps ca-certificates python3 python3-dev gcc g++ libow-dev || exit 10
-    apt-get install -y --no-install-recommends python3-distutils
-    apt-get install -y --no-install-recommends python3-setuptools
-    apt-get install -y --no-install-recommends libjpeg-dev
-    apt-get install -y --no-install-recommends libz-dev
-    apt-get install -y --no-install-recommends libssl-dev
-    apt-get install -y --no-install-recommends libffi-dev
+    apt-get install -y --no-install-recommends python3-distutils || exit 10
+    apt-get install -y --no-install-recommends python3-setuptools || exit 10
+    apt-get install -y --no-install-recommends python3-venv # no dedicated deb in some distros
+    apt-get install -y --no-install-recommends libjpeg-dev || exit 10
+    apt-get install -y --no-install-recommends libz-dev || exit 10
+    apt-get install -y --no-install-recommends libssl-dev || exit 10
+    apt-get install -y --no-install-recommends libffi-dev || exit 10
     [ ! $LOCAL_PANDAS ] && apt-get install -y --no-install-recommends python3-pandas
     ;;
   fedora)

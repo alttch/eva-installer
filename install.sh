@@ -214,7 +214,8 @@ case $ID_LIKE in
     [ ! $LOCAL_PANDAS ] && apt-get install -y --no-install-recommends python3-pandas
     ;;
   fedora)
-    yum install -y bash jq curl which procps ca-certificates python3 python3-devel gcc g++ owfs-libs owfs-devel libffi-devel openssl-devel libjpeg-devel zlib-devel || exit 10
+    yum install -y bash jq curl which procps ca-certificates python3 python3-devel gcc libffi-devel openssl-devel libjpeg-devel zlib-devel || exit 10
+    yum install -y g++ owfs-libs owfs-devel || exit 10
     ;;
 esac
 

@@ -93,9 +93,13 @@ while [ "$1" ]; do
           ID=fedora
           ID_LIKE=fedora
           ;;
+        rhel)
+          ID=rhel
+          ID_LIKE=fedora
+          ;;
         *)
           echo "Invalid option"
-          echo "--force-os debian|ubuntu|fedora|raspbian"
+          echo "--force-os debian|ubuntu|fedora|raspbian|rhel"
           exit 12
           ;;
       esac
@@ -162,6 +166,9 @@ fi
 [ -z "$ID_LIKE" ] && . /etc/os-release
 [ -z "$ID_LIKE" ] && ID_LIKE=$ID
 
+[ -z "$OS_VERSION_MAJOR" ] && \
+  OS_VERSION_MAJOR=$(grep "^VERSION=" /etc/os-release|tr -d '"'|cut -d= -f2|awk '{ print $1 }'|cut -d. -f1)
+
 for I in $ID_LIKE; do
   case $I in
     debian|fedora)
@@ -172,7 +179,7 @@ for I in $ID_LIKE; do
 done
 
 case $ID in
-  debian|fedora|ubuntu|raspbian)
+  debian|fedora|ubuntu|raspbian|rhel)
     ;;
   *)
     echo "Unsupported Linux distribution. Please install EVA ICS manually"
@@ -200,10 +207,23 @@ if [ $ID_LIKE = "debian" ]; then
   fi
 fi
 
+if [ "$INSTALL_MOSQUITTO" ] || [ -z "$LOCAL_PANDAS" ]; then
+  if [ "$ID" = "rhel" ]; then
+    echo "Installing EPEL for RedHat Enterprise Linux ${OS_VERSION_MAJOR}..."
+    yum install -y \
+      "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${OS_VERSION_MAJOR}.noarch.rpm" || exit 10
+    if [ "$OS_VERSION_MAJOR" -ge 8 ]; then
+      echo "Enabling codeready-builder..."
+      ARCH=$( /bin/arch )
+      subscription-manager repos --enable "codeready-builder-for-rhel-8-${ARCH}-rpms"
+    fi
+  fi
+fi
 
 case $ID_LIKE in
   debian)
-    apt-get install -y --no-install-recommends bash jq curl procps ca-certificates python3 python3-dev gcc g++ libow-dev || exit 10
+    apt-get install -y --no-install-recommends \
+      bash jq curl procps ca-certificates python3 python3-dev gcc g++ tar gzip || exit 10
     apt-get install -y --no-install-recommends python3-distutils || exit 10
     apt-get install -y --no-install-recommends python3-setuptools || exit 10
     apt-get install -y --no-install-recommends python3-venv # no dedicated deb in some distros
@@ -211,11 +231,11 @@ case $ID_LIKE in
     apt-get install -y --no-install-recommends libz-dev || exit 10
     apt-get install -y --no-install-recommends libssl-dev || exit 10
     apt-get install -y --no-install-recommends libffi-dev || exit 10
-    [ ! $LOCAL_PANDAS ] && apt-get install -y --no-install-recommends python3-pandas
     ;;
   fedora)
-    yum install -y bash jq curl which procps ca-certificates python3 python3-devel gcc libffi-devel openssl-devel libjpeg-devel zlib-devel || exit 10
-    yum install -y g++ owfs-libs owfs-devel || exit 10
+    yum install -y bash jq curl which procps ca-certificates python3 python3-devel \
+      gcc libffi-devel openssl-devel libjpeg-devel zlib-devel tar gzip || exit 10
+    yum install -y g++ || yum install -y gcc-c++ || exit 10
     ;;
 esac
 
@@ -227,14 +247,14 @@ if [ "$INSTALL_MOSQUITTO" ]; then
       echo "bind_address 127.0.0.1" >> /etc/mosquitto/mosquitto.conf
       systemctl enable mosquitto
       /etc/init.d/mosquitto start
-    ;;
+      ;;
     fedora)
       yum install -y mosquitto || exit 10
       systemctl stop mosquitto
       echo "bind_address 127.0.0.1" >> /etc/mosquitto/mosquitto.conf
       systemctl enable mosquitto
       systemctl start mosquitto
-    ;;
+      ;;
   esac
   sleep 2
   if ! pkill --signal 0 mosquitto; then
@@ -249,7 +269,7 @@ VERSION=$(curl -Ls $REPO/update_info.json|jq -r .version)
 BUILD=$(curl -Ls $REPO/update_info.json|jq -r .build)
 
 if ! curl -L "${REPO}/${VERSION}/nightly/eva-${VERSION}-${BUILD}.tgz" \
-    -o /tmp/eva-dist.tgz; then
+  -o /tmp/eva-dist.tgz; then
   echo "Unable to download EVA ICS distribution"
   exit 7
 fi
@@ -266,7 +286,7 @@ rmdir "eva-${VERSION}"
 if [ -z "$LOCAL_PANDAS" ]; then
   case $ID_LIKE in
     debian)
-      apt install -y --no-install-recommends python3-pandas || exit 8
+      apt-get install -y --no-install-recommends python3-pandas || exit 8
       ;;
     fedora)
       yum install -y python3-pandas || exit 8
@@ -277,7 +297,7 @@ if [ -z "$LOCAL_PANDAS" ]; then
 fi
 
 if [ $ID = "raspbian" ] && [ -z "$RASPBIAN_LOCAL_CRYPTOGRAPHY" ]; then
-  apt install -y --no-install-recommends python3-cryptography || exit 8
+  apt-get install -y --no-install-recommends python3-cryptography || exit 8
   echo "SYSTEM_SITE_PACKAGES=1" > ./etc/venv
   SKIP_MODS="$SKIP_MODS cryptography"
 fi

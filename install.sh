@@ -312,9 +312,10 @@ fi
 
 if [ "$UNATTENDED" ]; then
   if [ "$INSTALL_MOSQUITTO" ]; then
-    ./easy-setup --link --auto -p all --mqtt localhost --mqtt-announce --mqtt-discovery --cloud-manager || exit $?
+    ./easy-setup --link --auto -p all --mqtt localhost \
+      --mqtt-announce --mqtt-discovery --cloud-manager $SETUP_OPTS || exit $?
   else
-    ./easy-setup --link --auto -p all --cloud-manager || exit $?
+    ./easy-setup --link --auto -p all --cloud-manager $SETUP_OPTS || exit $?
   fi
 else
   ./easy-setup $SETUP_OPTS || exit $?

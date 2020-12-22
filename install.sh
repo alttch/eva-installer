@@ -97,9 +97,13 @@ while [ "$1" ]; do
           ID=rhel
           ID_LIKE=fedora
           ;;
+        centos)
+          ID=centos
+          ID_LIKE=fedora
+          ;;
         *)
           echo "Invalid option"
-          echo "--force-os debian|ubuntu|fedora|raspbian|rhel"
+          echo "--force-os debian|ubuntu|fedora|raspbian|rhel|centos"
           exit 12
           ;;
       esac
@@ -179,7 +183,7 @@ for I in $ID_LIKE; do
 done
 
 case $ID in
-  debian|fedora|ubuntu|raspbian|rhel)
+  debian|fedora|ubuntu|raspbian|rhel|centos)
     ;;
   *)
     echo "Unsupported Linux distribution. Please install EVA ICS manually"
@@ -215,8 +219,12 @@ if [ "$INSTALL_MOSQUITTO" ] || [ -z "$LOCAL_PANDAS" ]; then
     if [ "$OS_VERSION_MAJOR" -ge 8 ]; then
       echo "Enabling codeready-builder..."
       ARCH=$( /bin/arch )
-      subscription-manager repos --enable "codeready-builder-for-rhel-8-${ARCH}-rpms"
+      subscription-manager repos --enable "codeready-builder-for-rhel-${OS_VERSION_MAJOR}-${ARCH}-rpms"
     fi
+  elif [ "$ID" = "centos" ]; then
+    yum install -y epel-release
+    dnf -y install dnf-plugins-core
+    dnf config-manager --set-enabled powertools
   fi
 fi
 

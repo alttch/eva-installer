@@ -334,7 +334,10 @@ if [ "$AUTOSTART" ]; then
     echo "[!] systemctl is not installed. Skipping auto start setup"
   else
     sed "s|/opt/eva|${PREFIX}|g" ./etc/systemd/eva-ics.service > /etc/systemd/system/eva-ics.service
-    systemctl enable eva-ics
+    systemctl enable eva-ics || exit 9
+    echo "Restarting EVA ICS with systemctl..."
+    ./bin/eva server stop || exit 10
+    systemctl start eva-ics || exit 11
   fi
 fi
 

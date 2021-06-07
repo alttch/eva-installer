@@ -291,6 +291,8 @@ mv ./* .. || exit 7
 cd ..
 rmdir "eva-${VERSION}"
 
+# TODO venv in registry
+
 if [ -z "$LOCAL_PANDAS" ]; then
   case $ID_LIKE in
     debian)

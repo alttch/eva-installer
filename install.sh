@@ -389,7 +389,7 @@ fi
 if [ "$MAKE_SYMLINKS" ]; then
   ln -sf "$PREFIX"/bin/eva /usr/local/bin/eva
   ln -sf "$PREFIX"/bin/eva-shell /usr/local/bin/eva-shell
-  ln -sf "$PREFIX"/bin/eva-shell /usr/local/bin/eva-registry
+  ln -sf "$PREFIX"/bin/eva-registry /usr/local/bin/eva-registry
 fi
 
 echo

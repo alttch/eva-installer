@@ -291,7 +291,7 @@ mv ./* .. || exit 7
 cd ..
 rmdir "eva-${VERSION}"
 
-# TODO venv in registry
+SYSTEM_SITE_PACKAGES=false
 
 if [ -z "$LOCAL_PANDAS" ]; then
   case $ID_LIKE in
@@ -302,21 +302,39 @@ if [ -z "$LOCAL_PANDAS" ]; then
       yum install -y python3-pandas || exit 8
       ;;
   esac
-  echo "SYSTEM_SITE_PACKAGES=1" > ./etc/venv
+  SYSTEM_SITE_PACKAGES=true
   SKIP_MODS="$SKIP_MODS pandas"
 fi
 
 if [ $ID = "raspbian" ] && [ -z "$RASPBIAN_LOCAL_CRYPTOGRAPHY" ]; then
   apt-get install -y --no-install-recommends python3-cryptography || exit 8
-  echo "SYSTEM_SITE_PACKAGES=1" > ./etc/venv
+  SYSTEM_SITE_PACKAGES=true
   SKIP_MODS="$SKIP_MODS cryptography"
 fi
 
-echo "SKIP=\"$SKIP_MODS\"" >> ./etc/venv
+VENV_CONFIG=./etc/venv_install.yml
+
+export VENV_CONFIG
+
+cat > $VENV_CONFIG <<EOF
+python: python3
+use-system-pip: false
+system-site-packages: ${SYSTEM_SITE_PACKAGES}
+EOF
+
+if [ "$SKIP_MODS" ]; then
+  echo "skip:" >> ${VENV_CONFIG}
+  for mod in $SKIP_MODS; do
+    echo " - ${mod}" >> ${VENV_CONFIG}
+  done
+fi
 
 if [ "$PREPARE_ONLY" ]; then
   echo
-  echo "System prepared. EVA ICS dir: $PREFIX"
+  echo "System prepared."
+  echo
+  echo "EVA ICS dir: $PREFIX"
+  echo "VENV_CONFIG: $VENV_CONFIG"
   exit 0
 fi
 

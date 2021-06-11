@@ -317,6 +317,9 @@ VENV_CONFIG=./etc/venv_install.yml
 export VENV_CONFIG
 
 cat > $VENV_CONFIG <<EOF
+# this file was used during automatic install and may be safely removed
+# to edit venv config, use the command (put system name manually if differs):
+# eva-registry edit eva3/\$(hostname)/config/venv"
 python: python3
 use-system-pip: false
 system-site-packages: ${SYSTEM_SITE_PACKAGES}
@@ -358,8 +361,8 @@ if [ "$AUTOSTART" ]; then
     systemctl enable eva-ics-registry || exit 9
     systemctl enable eva-ics || exit 9
     echo "Restarting EVA ICS with systemctl..."
-    ./sbin/registry-control stop || exit 10
     ./bin/eva server stop || exit 10
+    ./sbin/registry-control stop || exit 10
     systemctl start eva-ics-registry || exit 11
     systemctl start eva-ics || exit 11
   fi
@@ -386,6 +389,7 @@ fi
 if [ "$MAKE_SYMLINKS" ]; then
   ln -sf "$PREFIX"/bin/eva /usr/local/bin/eva
   ln -sf "$PREFIX"/bin/eva-shell /usr/local/bin/eva-shell
+  ln -sf "$PREFIX"/bin/eva-shell /usr/local/bin/eva-registry
 fi
 
 echo

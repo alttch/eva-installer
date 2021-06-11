@@ -363,8 +363,8 @@ if [ "$AUTOSTART" ]; then
     echo "Restarting EVA ICS with systemctl..."
     ./bin/eva server stop || exit 10
     ./sbin/registry-control stop || exit 10
-    systemctl start eva-ics-registry || exit 11
-    systemctl start eva-ics || exit 11
+    systemctl restart eva-ics-registry || exit 11
+    systemctl restart eva-ics || exit 11
   fi
 fi
 

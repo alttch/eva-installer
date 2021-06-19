@@ -245,9 +245,9 @@ case $ID_LIKE in
     apk add jq curl gcc g++ libjpeg jpeg-dev libjpeg-turbo-dev libpng-dev bash || exit 10
     apk add python3 python3-dev libc-dev musl-dev libffi-dev openssl-dev freetype-dev make || exit 10
     if [ ! -f "$HOME/.cargo/env" ]; then
-      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh /dev/stdin -y
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh /dev/stdin -y || exit 10
     fi
-    . "$HOME/.cargo/env"
+    . "$HOME/.cargo/env" || exit 10
     ln -sf /usr/include/locale.h /usr/include/xlocale.h || exit 10
     ;;
   fedora)

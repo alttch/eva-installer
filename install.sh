@@ -183,7 +183,7 @@ for I in $ID_LIKE; do
 done
 
 case $ID in
-  debian|fedora|ubuntu|raspbian|rhel|centos)
+  debian|fedora|ubuntu|raspbian|rhel|centos|alpine)
     ;;
   *)
     echo "Unsupported Linux distribution. Please install EVA ICS manually"
@@ -240,6 +240,16 @@ case $ID_LIKE in
     apt-get install -y --no-install-recommends libssl-dev || exit 10
     apt-get install -y --no-install-recommends libffi-dev || exit 10
     ;;
+  alpine)
+    apk update || exit 10
+    apk add jq curl gcc g++ libjpeg jpeg-dev libjpeg-turbo-dev libpng-dev bash || exit 10
+    apk add python3 python3-dev libc-dev musl-dev libffi-dev openssl-dev freetype-dev make || exit 10
+    if [ ! -f "$HOME/.cargo/env" ]; then
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh /dev/stdin -y
+    fi
+    . "$HOME/.cargo/env"
+    ln -sf /usr/include/locale.h /usr/include/xlocale.h || exit 10
+    ;;
   fedora)
     yum install -y bash jq curl which procps ca-certificates python3 python3-devel \
       gcc libffi-devel openssl-devel libjpeg-devel zlib-devel tar gzip || exit 10
@@ -263,6 +273,10 @@ if [ "$INSTALL_MOSQUITTO" ]; then
       systemctl enable mosquitto
       systemctl start mosquitto
       ;;
+    alpine)
+      apk add mosquitto || exit 10
+      rc-update add mosquitto || exit 10
+      /etc/init.d/mosquitto start
   esac
   sleep 2
   if ! pkill --signal 0 mosquitto; then
@@ -301,6 +315,8 @@ if [ -z "$LOCAL_PANDAS" ]; then
     fedora)
       yum install -y python3-pandas || exit 8
       ;;
+    alpine)
+      apk add py3-pandas
   esac
   SYSTEM_SITE_PACKAGES=true
   SKIP_MODS="$SKIP_MODS pandas"
@@ -353,18 +369,36 @@ else
 fi
 
 if [ "$AUTOSTART" ]; then
-  if ! command -v systemctl > /dev/null; then
-    echo "[!] systemctl is not installed. Skipping auto start setup"
+  if [ "$ID_LIKE" = "alpine" ]; then
+    rc-update add local || exit 11
+    mkdir -p /etc/local.d
+    cat > /etc/local.d/eva.start <<EOF
+#!/bin/sh
+
+/opt/eva/sbin/registry-control start || exit 1
+/opt/eva/sbin/eva-control start || exit 1
+EOF
+    cat > /etc/local.d/eva.stop <<EOF
+#!/bin/sh
+
+/opt/eva/sbin/eva-control stop || exit 1
+/opt/eva/sbin/registry-control stop || exit 1
+EOF
+    chmod +x /etc/local.d/eva.start /etc/local.d/eva.stop || exit 11
   else
-    sed "s|/opt/eva|${PREFIX}|g" ./etc/systemd/eva-ics-registry.service > /etc/systemd/system/eva-ics-registry.service
-    sed "s|/opt/eva|${PREFIX}|g" ./etc/systemd/eva-ics.service > /etc/systemd/system/eva-ics.service
-    systemctl enable eva-ics-registry || exit 9
-    systemctl enable eva-ics || exit 9
-    echo "Restarting EVA ICS with systemctl..."
-    ./bin/eva server stop || exit 10
-    ./sbin/registry-control stop || exit 10
-    systemctl restart eva-ics-registry || exit 11
-    systemctl restart eva-ics || exit 11
+    if ! command -v systemctl > /dev/null; then
+      echo "[!] systemctl is not installed. Skipping auto start setup"
+    else
+      sed "s|/opt/eva|${PREFIX}|g" ./etc/systemd/eva-ics-registry.service > /etc/systemd/system/eva-ics-registry.service
+      sed "s|/opt/eva|${PREFIX}|g" ./etc/systemd/eva-ics.service > /etc/systemd/system/eva-ics.service
+      systemctl enable eva-ics-registry || exit 9
+      systemctl enable eva-ics || exit 9
+      echo "Restarting EVA ICS with systemctl..."
+      ./bin/eva server stop || exit 10
+      ./sbin/registry-control stop || exit 10
+      systemctl restart eva-ics-registry || exit 11
+      systemctl restart eva-ics || exit 11
+    fi
   fi
 fi
 

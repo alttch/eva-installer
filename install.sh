@@ -242,7 +242,7 @@ case $ID_LIKE in
     ;;
   alpine)
     apk update || exit 10
-    apk add jq curl gcc g++ libjpeg jpeg-dev libjpeg-turbo-dev libpng-dev bash || exit 10
+    apk add jq curl gcc g++ libjpeg jpeg-dev libjpeg-turbo-dev libpng-dev bash tar || exit 10
     apk add python3 python3-dev libc-dev musl-dev libffi-dev openssl-dev freetype-dev make || exit 10
     ln -sf /usr/include/locale.h /usr/include/xlocale.h || exit 10
     ;;

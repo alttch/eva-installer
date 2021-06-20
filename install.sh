@@ -254,7 +254,7 @@ case $ID_LIKE in
 esac
 
 if [ ! -f "$HOME/.cargo/env" ]; then
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh /dev/stdin -y || exit 10
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh /dev/stdin -y -c rustc || exit 10
 fi
 . "$HOME/.cargo/env" || exit 10
 

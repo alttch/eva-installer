@@ -253,10 +253,12 @@ case $ID_LIKE in
     ;;
 esac
 
-if [ ! -f "$HOME/.cargo/env" ]; then
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh /dev/stdin -y -c rustc || exit 10
+if [ "$SKIP_RUST" != "1" ]; then
+  if [ ! -f "$HOME/.cargo/env" ]; then
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh /dev/stdin -y -c rustc || exit 10
+  fi
+  . "$HOME/.cargo/env" || exit 10
 fi
-. "$HOME/.cargo/env" || exit 10
 
 if [ "$INSTALL_MOSQUITTO" ]; then
   case $ID_LIKE in

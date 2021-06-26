@@ -247,7 +247,7 @@ case $ID_LIKE in
     ln -sf /usr/include/locale.h /usr/include/xlocale.h || exit 10
     ;;
   fedora)
-    yum install -y bash jq curl which procps ca-certificates python3 python3-devel \
+    yum install -y bash jq curl hostname which procps ca-certificates python3 python3-devel \
       gcc libffi-devel openssl-devel libjpeg-devel zlib-devel tar gzip || exit 10
     yum install -y g++ || yum install -y gcc-c++ || exit 10
     ;;

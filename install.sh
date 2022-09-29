@@ -18,6 +18,7 @@ RASPBIAN_LOCAL_CRYPTOGRAPHY=
 SKIP_MODS=
 PREPARE_ONLY=
 REPO=https://pub.bma.ai/eva3
+INFO_FILE=update_info.json
 ID=
 ID_LIKE=
 
@@ -69,7 +70,7 @@ while [ "$1" ]; do
       shift
       ;;
     --test)
-      REPO=https://test.eva-ics.com
+      INFO_FILE=update_info_test.json
       shift
       ;;
     --force-os)
@@ -290,8 +291,8 @@ fi
 
 rm -f /tmp/eva-dist.tgz
 
-VERSION=$(curl -Ls $REPO/update_info.json|jq -r .version)
-BUILD=$(curl -Ls $REPO/update_info.json|jq -r .build)
+VERSION=$(curl -Ls $REPO/$INFO_FILE|jq -r .version)
+BUILD=$(curl -Ls $REPO/$INFO_FILE|jq -r .build)
 
 if ! curl -L "${REPO}/${VERSION}/nightly/eva-${VERSION}-${BUILD}.tgz" \
   -o /tmp/eva-dist.tgz; then

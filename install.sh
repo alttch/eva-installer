@@ -17,7 +17,7 @@ SETUP_OPTS=
 RASPBIAN_LOCAL_CRYPTOGRAPHY=
 SKIP_MODS=
 PREPARE_ONLY=
-REPO=https://get.eva-ics.com
+REPO=https://pub.bma.ai/eva3
 ID=
 ID_LIKE=
 
